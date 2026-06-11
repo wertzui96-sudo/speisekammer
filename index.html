@@ -22,6 +22,7 @@
 <br><br>
 
 <button onclick="startScanner()">📷 Scanner starten</button>
+<button onclick="stopScanner()">⛔ Scanner stoppen</button>
 <button onclick="switchCamera()">🔄 Kamera wechseln</button>
 
 <div id="reader" style="width:300px; margin-top:10px;"></div>
@@ -45,10 +46,6 @@ let cameras = [];
 let currentCameraIndex = 0;
 
 function startScanner() {
-  const reader = document.getElementById("reader");
-
-  html5QrCode = new Html5Qrcode("reader");
-
   Html5Qrcode.getCameras().then(devices => {
 
     if (!devices || devices.length === 0) {
@@ -58,9 +55,8 @@ function startScanner() {
 
     cameras = devices;
 
-    // wenn noch keine Kamera gewählt → starte mit erster
-    if (currentCameraIndex >= cameras.length) {
-      currentCameraIndex = 0;
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("reader");
     }
 
     const cameraId = cameras[currentCameraIndex].id;
@@ -69,21 +65,35 @@ function startScanner() {
       cameraId,
       {
         fps: 10,
-        qrbox: 250
+        qrbox: { width: 250, height: 250 },
+
+        // 🔥 WICHTIG: Barcode-Formate aktivieren
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.CODE_128
+        ],
+
+        // 📱 zwingt Rückkamera (iPhone wichtig)
+        videoConstraints: {
+          facingMode: { exact: "environment" }
+        }
       },
       (decodedText) => {
         handleScan(decodedText);
         stopScanner();
       }
-    );
+    ).catch(err => {
+      console.error(err);
+      alert("Scanner Fehler: " + err);
+    });
   });
 }
 
 function switchCamera() {
-  if (!cameras.length) {
-    alert("Scanner noch nicht gestartet");
-    return;
-  }
+  if (!cameras.length) return;
 
   stopScanner();
 
@@ -96,105 +106,13 @@ function switchCamera() {
 
 function stopScanner() {
   if (html5QrCode) {
-    html5QrCode.stop().then(() => {
-      document.getElementById("reader").innerHTML = "";
-    }).catch(() => {});
+    html5QrCode.stop()
+      .then(() => {
+        document.getElementById("reader").innerHTML = "";
+      })
+      .catch(() => {});
   }
 }
-
-function handleScan(code) {
-  // Barcode wird hier verarbeitet
-  document.getElementById("name").value = code;
-}
-  
-let products = JSON.parse(localStorage.getItem("products")) || [];
-
-function save() {
-  localStorage.setItem("products", JSON.stringify(products));
-}
-
-function addProduct() {
-  const name = document.getElementById("name").value;
-  const mhd = document.getElementById("mhd").value;
-  const qty = parseInt(document.getElementById("qty").value || "1");
-
-  if (!name || !mhd) return;
-
-  // prüfen ob Produkt schon existiert (gleiches Produkt + MHD)
-  let existing = products.find(p => p.name === name && p.mhd === mhd);
-
-  if (existing) {
-    existing.qty += qty;
-  } else {
-    products.push({ name, mhd, qty });
-  }
-
-  save();
-  render();
-}
-
-function removeOne(index) {
-  products[index].qty -= 1;
-
-  if (products[index].qty <= 0) {
-    products.splice(index, 1);
-  }
-
-  save();
-  render();
-}
-
-function removeProduct(index) {
-  products.splice(index, 1);
-  save();
-  render();
-}
-
-function render() {
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  products.sort((a, b) => {
-    return parseDate(a.mhd) - parseDate(b.mhd);
-  });
-
-  const today = new Date();
-
-  products.forEach((p, i) => {
-    const expiry = parseDate(p.mhd);
-    
-    const diffDays = (expiry - today) / (1000 * 60 * 60 * 24);
-
-    let status = "";
-
-    if (diffDays < 0) {
-      status = "🔴 abgelaufen";
-    } else if (diffDays <= 7) {
-      status = "⚠️ bald ablaufend";
-    } else {
-      status = "🟢 ok";
-    }
-
-    list.innerHTML += `
-      <tr>
-        <td>${p.name}</td>
-        <td>${p.qty}</td>
-        <td>${p.mhd} ${status}</td>
-        <td>
-          <button onclick="removeOne(${i})">-1</button>
-          <button onclick="removeProduct(${i})">Löschen</button>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-function parseDate(str) {
-  const [day, month, year] = str.split(".");
-  return new Date(year, month - 1, day);
-}
-
-render();
 </script>
 
 </body>
