@@ -21,7 +21,8 @@
 
 <br><br>
 
-<button onclick="startScanner()">📷 Barcode scannen</button>
+<button onclick="startScanner()">📷 Scanner starten</button>
+<button onclick="switchCamera()">🔄 Kamera wechseln</button>
 
 <div id="reader" style="width:300px; margin-top:10px;"></div>
   
@@ -40,6 +41,8 @@
 
 <script>
 let html5QrCode;
+let cameras = [];
+let currentCameraIndex = 0;
 
 function startScanner() {
   const reader = document.getElementById("reader");
@@ -53,16 +56,14 @@ function startScanner() {
       return;
     }
 
-    // 🔥 versuche Rückkamera zu finden
-    let cameraId = devices[0].id;
+    cameras = devices;
 
-    for (let device of devices) {
-      if (device.label.toLowerCase().includes("back") ||
-          device.label.toLowerCase().includes("rear") ||
-          device.label.toLowerCase().includes("environment")) {
-        cameraId = device.id;
-      }
+    // wenn noch keine Kamera gewählt → starte mit erster
+    if (currentCameraIndex >= cameras.length) {
+      currentCameraIndex = 0;
     }
+
+    const cameraId = cameras[currentCameraIndex].id;
 
     html5QrCode.start(
       cameraId,
@@ -78,11 +79,26 @@ function startScanner() {
   });
 }
 
+function switchCamera() {
+  if (!cameras.length) {
+    alert("Scanner noch nicht gestartet");
+    return;
+  }
+
+  stopScanner();
+
+  currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+
+  setTimeout(() => {
+    startScanner();
+  }, 300);
+}
+
 function stopScanner() {
   if (html5QrCode) {
     html5QrCode.stop().then(() => {
       document.getElementById("reader").innerHTML = "";
-    });
+    }).catch(() => {});
   }
 }
 
