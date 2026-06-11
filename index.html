@@ -83,11 +83,11 @@ function render() {
     return parseDate(a.mhd) - parseDate(b.mhd);
   });
 
-  const today = new Date(new Date().setHours(0,0,0,0));
+  const today = new Date();
 
   products.forEach((p, i) => {
-    const expiry = new Date(parseDate(p.mhd).setHours(0,0,0,0));
-
+    const expiry = parseDate(p.mhd);
+    
     const diffDays = (expiry - today) / (1000 * 60 * 60 * 24);
 
     let status = "";
