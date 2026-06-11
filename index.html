@@ -30,18 +30,26 @@
 </table>
 
 <script>
-let products = [];
+let products = JSON.parse(localStorage.getItem("products")) || [];
+
+function save() {
+  localStorage.setItem("products", JSON.stringify(products));
+}
 
 function addProduct() {
   const name = document.getElementById("name").value;
   const mhd = document.getElementById("mhd").value;
 
+  if (!name || !mhd) return;
+
   products.push({ name, mhd });
+  save();
   render();
 }
 
 function removeProduct(index) {
   products.splice(index, 1);
+  save();
   render();
 }
 
@@ -59,6 +67,8 @@ function render() {
     `;
   });
 }
+
+render();
 </script>
 
 </body>
