@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Speisekammer</title>
+  <style>
+    body { font-family: Arial; margin: 40px; }
+    input, button { padding: 8px; margin: 5px; }
+    table { margin-top: 20px; width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+  </style>
+</head>
+<body>
+
+<h1>🥫 Meine Speisekammer</h1>
+
+<input id="name" placeholder="Produkt">
+<input id="mhd" placeholder="MHD (z.B. 2028-12)">
+<button onclick="addProduct()">Hinzufügen</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>Produkt</th>
+      <th>MHD</th>
+      <th>Aktion</th>
+    </tr>
+  </thead>
+  <tbody id="list"></tbody>
+</table>
+
+<script>
+let products = [];
+
+function addProduct() {
+  const name = document.getElementById("name").value;
+  const mhd = document.getElementById("mhd").value;
+
+  products.push({ name, mhd });
+  render();
+}
+
+function removeProduct(index) {
+  products.splice(index, 1);
+  render();
+}
+
+function render() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  products.forEach((p, i) => {
+    list.innerHTML += `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.mhd}</td>
+        <td><button onclick="removeProduct(${i})">X</button></td>
+      </tr>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>
