@@ -79,12 +79,33 @@ function render() {
   const list = document.getElementById("list");
   list.innerHTML = "";
 
+  // nach MHD sortieren (frühestes zuerst)
+  products.sort((a, b) => new Date(a.mhd) - new Date(b.mhd));
+
+  const today = new Date();
+
   products.forEach((p, i) => {
+    const expiry = new Date(p.mhd);
+
+    let status = "";
+    
+    // abgelaufen
+    if (expiry < today) {
+      status = "🔴 abgelaufen";
+    }
+    // läuft in 7 Tagen ab
+    else if ((expiry - today) / (1000 * 60 * 60 * 24) <= 7) {
+      status = "⚠️ bald ablaufend";
+    }
+    else {
+      status = "🟢 ok";
+    }
+
     list.innerHTML += `
       <tr>
         <td>${p.name}</td>
         <td>${p.qty}</td>
-        <td>${p.mhd}</td>
+        <td>${p.mhd} ${status}</td>
         <td>
           <button onclick="removeOne(${i})">-1</button>
           <button onclick="removeProduct(${i})">Löschen</button>
