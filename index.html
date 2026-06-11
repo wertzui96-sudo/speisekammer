@@ -47,7 +47,22 @@ function startScanner() {
   html5QrCode = new Html5Qrcode("reader");
 
   Html5Qrcode.getCameras().then(devices => {
-    const cameraId = devices[0].id;
+
+    if (!devices || devices.length === 0) {
+      alert("Keine Kamera gefunden");
+      return;
+    }
+
+    // 🔥 versuche Rückkamera zu finden
+    let cameraId = devices[0].id;
+
+    for (let device of devices) {
+      if (device.label.toLowerCase().includes("back") ||
+          device.label.toLowerCase().includes("rear") ||
+          device.label.toLowerCase().includes("environment")) {
+        cameraId = device.id;
+      }
+    }
 
     html5QrCode.start(
       cameraId,
