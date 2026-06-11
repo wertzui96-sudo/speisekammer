@@ -67,19 +67,14 @@ function startScanner() {
         fps: 10,
         qrbox: { width: 250, height: 250 },
 
-        // 🔥 WICHTIG: Barcode-Formate aktivieren
+        // 👉 wichtig: NUR Barcode Formate
         formatsToSupport: [
           Html5QrcodeSupportedFormats.EAN_13,
           Html5QrcodeSupportedFormats.EAN_8,
           Html5QrcodeSupportedFormats.UPC_A,
           Html5QrcodeSupportedFormats.UPC_E,
           Html5QrcodeSupportedFormats.CODE_128
-        ],
-
-        // 📱 zwingt Rückkamera (iPhone wichtig)
-        videoConstraints: {
-          facingMode: { exact: "environment" }
-        }
+        ]
       },
       (decodedText) => {
         handleScan(decodedText);
@@ -101,7 +96,7 @@ function switchCamera() {
 
   setTimeout(() => {
     startScanner();
-  }, 300);
+  }, 400);
 }
 
 function stopScanner() {
@@ -112,6 +107,10 @@ function stopScanner() {
       })
       .catch(() => {});
   }
+}
+
+function handleScan(code) {
+  document.getElementById("name").value = code;
 }
 </script>
 
