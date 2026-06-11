@@ -16,7 +16,9 @@
 
 <input id="name" placeholder="Produkt">
 <input id="mhd" placeholder="MHD (z.B. 2028-12)">
-<button onclick="addProduct()">Hinzufügen</button>
+<input id="qty" type="number" placeholder="Menge" value="1" min="1">
+
+<button onclick="addProduct()">Einlagern</button>
 
 <table>
   <thead>
@@ -39,10 +41,30 @@ function save() {
 function addProduct() {
   const name = document.getElementById("name").value;
   const mhd = document.getElementById("mhd").value;
+  const qty = parseInt(document.getElementById("qty").value || "1");
 
   if (!name || !mhd) return;
 
-  products.push({ name, mhd });
+  // prüfen ob Produkt schon existiert (gleiches Produkt + MHD)
+  let existing = products.find(p => p.name === name && p.mhd === mhd);
+
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    products.push({ name, mhd, qty });
+  }
+
+  save();
+  render();
+}
+
+function removeOne(index) {
+  products[index].qty -= 1;
+
+  if (products[index].qty <= 0) {
+    products.splice(index, 1);
+  }
+
   save();
   render();
 }
@@ -61,8 +83,12 @@ function render() {
     list.innerHTML += `
       <tr>
         <td>${p.name}</td>
+        <td>${p.qty}</td>
         <td>${p.mhd}</td>
-        <td><button onclick="removeProduct(${i})">X</button></td>
+        <td>
+          <button onclick="removeOne(${i})">-1</button>
+          <button onclick="removeProduct(${i})">Löschen</button>
+        </td>
       </tr>
     `;
   });
